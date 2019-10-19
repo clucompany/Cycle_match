@@ -2,10 +2,12 @@
 #[macro_use]
 extern crate cycle_match;
 
-fn main() {
+#[test]
+fn for_match() {
 	let data = b"123456789";
 	
 	let mut num = 0usize;
+	
 	for_match!((data) -> |_| {
 		Some(b'0') => {},
 		Some(a @ b'0' ..= b'9') => {
@@ -16,5 +18,5 @@ fn main() {
 		_ => break
 	});
 	
-	println!("{}", num);
+	assert_eq!(num, 123456789);
 }

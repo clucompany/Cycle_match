@@ -1,5 +1,22 @@
 //Copyright (c) 2019 #UlinProject Denis Kotlyarov (Денис Котляров)
 
+//-----------------------------------------------------------------------------
+//Licensed under the Apache License, Version 2.0 (the "License");
+//you may not use this file except in compliance with the License.
+//You may obtain a copy of the License at
+
+//	   http://www.apache.org/licenses/LICENSE-2.0
+
+//Unless required by applicable law or agreed to in writing, software
+//distributed under the License is distributed on an "AS IS" BASIS,
+//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//See the License for the specific language governing permissions and
+// limitations under the License.
+//-----------------------------------------------------------------------------
+
+// or
+
+//-----------------------------------------------------------------------------
 //Permission is hereby granted, free of charge, to any person obtaining a copy
 //of this software and associated documentation files (the "Software"), to deal
 //in the Software without restriction, including without limitation the rights
@@ -27,69 +44,29 @@
 
 #![no_std]
 
+#[macro_use]
+mod while_match;
 
-#[macro_export]
-macro_rules! while_match {
-	( ($($t:tt)+) -> |let mut $ident:ident| { $($tt:tt)* } ) => {{
-		let mut $ident;
-		
-		$crate::while_match!(
-			($($t)+) -> |$ident| { $($tt)* }
-		)
-	}};
-	
-	( ($($t:tt)+) -> |$ident:ident| { $($tt:tt)* } ) => {{
-		loop {
-			$ident = $($t)*;
-			$crate::decode_match!(($ident) $($tt)*);
-		}
-	}};
-}
+#[macro_use]
+mod for_match;
 
-#[macro_export]
-macro_rules! for_match {
-	( ($($t:tt)*) -> |let mut $n:ident| { $($tt:tt)* } ) => {{
-		let mut $n;
-		
-		$crate::for_match!(
-			($($t)*) -> |$n| { $($tt)* }
-		)
-	}};
-	
-	( ($($t:tt)*) -> |$ident:ident| { $($tt:tt)* } ) => {{
-		let mut iter = ($($t)*).iter();
-		
-		loop {
-			$ident = iter.next();
-			$crate::decode_match!(($ident) $($tt)*);
-		}
-	}};
-}
 
+
+
+#[doc(hidden)]
 #[macro_export]
-macro_rules! decode_match {
-	
-	
-	[ ($($t:tt)*) @end |$name:ident| => {$($d:tt)*}, $($tt:tt)* ] => {{
-		match $($t)* {
-			$($tt)*
-		}
+macro_rules! cycle_matchbegin {
+	[@$a:tt ($($t:tt)*): $({ $($lt:tt)* },)* match {$($tt:tt)*} $(,{ $($rt:tt)* } $(,)* )*] => {{
+		$($($lt)*)*
 		
-		{
-			let $name = $($t)*;
-			$($d)*
-		}
+		$crate::cycle_matchbegin! {
+			@$a ($($t)*): $($tt)*
+		};
+		
+		$($($rt)*)*
 	}};
-	[ ($($t:tt)*) @start |$name:ident| => {$($d:tt)*}, $($tt:tt)*] => {
-		{
-			let $name = $($t)*;
-			$($d)*
-		}
-		
-		$crate::decode_match!(($($t)*) $($tt)*);
-	};
 	
-	[ ($($t:tt)*) $($tt:tt)* ] => {{
+	[@$a:tt ($($t:tt)*): $($tt:tt)* ] => {{
 		match $($t)* {
 			$($tt)*
 		}
