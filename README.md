@@ -118,7 +118,9 @@ fn main() {
 ```
 
 @'begin:	(Optional) Labels this loop.
+
 num:		(Necessarily) 1 required argument for match.
+
 0:		(Optional) Any possible value that will be available only in the body of this macro, described with a comma. This value will be associated with the name you write in | |. // (let mut num_add = 0; ...)
 
 
