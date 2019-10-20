@@ -8,7 +8,7 @@ fn for_match() {
 	
 	let mut num = 0usize;
 	
-	for_match!((data) -> |_| {
+	for_match!((data) -> || {
 		Some(b'0') => {},
 		Some(a @ b'0' ..= b'9') => {
 			num *= 10;

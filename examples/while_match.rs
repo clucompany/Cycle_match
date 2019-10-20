@@ -1,5 +1,4 @@
 
-
 #[macro_use]
 extern crate cycle_match;
 
@@ -9,8 +8,7 @@ fn main() {
 	let mut num = 0usize;
 	
 	let mut iter = data.iter();
-	let mut a;
-	while_match!((iter) -> |a| {
+	while_match!((iter) -> || {
 		Some(b'0') => {},
 		Some(a @ b'0' ..= b'9') => {
 			num *= 10;

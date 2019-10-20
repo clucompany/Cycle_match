@@ -9,7 +9,7 @@ fn while_match() {
 	let mut num = 0usize;
 	
 	let mut iter = data.iter();
-	while_match!((iter) -> |_| {
+	while_match!((iter) -> || {
 		Some(b'0') => {},
 		Some(a @ b'0' ..= b'9') => {
 			num *= 10;

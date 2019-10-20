@@ -5,18 +5,16 @@ extern crate cycle_match;
 use std::io::Read;
 
 fn main() -> Result<(), std:: io::Error> {
-	
 	let mut read_buffer = [0u8; 128];
 	let mut buffer = Vec::with_capacity(130);
 	let mut file = std::fs::File::open("./read.txt")?;
 	
-	
-	while_match!((file.read(&mut read_buffer)) -> |_| {
+	while_match!((file.read(&mut read_buffer)) -> || {
 		Ok(0) => break,
 		Ok(len) => {
 			let real_array = &read_buffer[..len];
 			
-			for_match!(@'read (real_array.into_iter()) -> |iter, _| {
+			for_match!(@'read (real_array.into_iter()) -> |iter| {
 				Some(13u8) => continue,
 				Some(b'\n') => {
 					if buffer.len() > 0 {
@@ -25,7 +23,7 @@ fn main() -> Result<(), std:: io::Error> {
 					}
 				},
 				Some(b'#') => {
-					while_match!((iter) -> |_| {
+					while_match!((iter) -> || {
 						Some(b'\n') => continue 'read,
 						Some(_a) => {},
 						_ => break 'read,
@@ -40,7 +38,6 @@ fn main() -> Result<(), std:: io::Error> {
 	});
 	if buffer.len() > 0 {
 		println!("#line: {}", unsafe { std::str::from_utf8_unchecked(&buffer) });
-		buffer.clear();
 	}
 	
 	Ok(())
