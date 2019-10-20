@@ -82,6 +82,47 @@ fn main() {
 }
 ```
 
+# Use 2 (for_match)
+
+Purpose: Convert characters to a digital sequence using a macro for_match.
+
+```rust
+#[macro_use]
+extern crate cycle_match;
+
+fn main() {
+	let data = "123456789";
+	
+	let mut num = 0;	
+	for_match!((data.as_bytes().into_iter()) -> || {
+		Some(b'0') => {},
+		Some(a @ b'0' ..= b'9') => {
+			num *= 10;
+			num += (a - b'0') as usize;
+		},
+		Some(a) => panic!("Unk byte: {:?}", a),
+		_ => break num,
+	});
+	
+	println!("{}", num);
+}
+```
+// See the "for_match" example for a more beautiful version.
+
+# Entrance arguments
+
+1. loop_match
+
+```
+	loop_match!(@'begin (num, 0 ...) -> |num_add ...| {
+```
+
+@'begin:	(Optional) Labels this loop.
+num:		(Necessarily) 1 required argument for match.
+0:		(Optional) Any possible value that will be available only in the body of this macro, described with a comma. This value will be associated with the name you write in | |. // (let mut num_add = 0; ...)
+
+
+
 # What can be written in the body of macros?
 
 1. Same as what you write in "match"
