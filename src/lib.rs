@@ -43,7 +43,7 @@ Convenient macros for combining cycles (for, while) with a match.
 
 # Full use
 
-Purpose: To read lines from a file ignoring comments and special characters using macros (for_match, while_match, loop).
+Purpose: To read lines from a file ignoring comments and special characters using macros (for_match, while_match).
 
 ```rust
 #[macro_use]
@@ -136,24 +136,7 @@ mod loop_match;
 #[doc(hidden)]
 #[macro_export]
 macro_rules! cycle_matchbegin {
-	/*[@$a:tt ($($t:tt)*): $({ $($lt:tt)* },)* match {$($tt:tt)*} $(,{ $($rt:tt)* } $(,)? )*] => {{
-		let _e = {$($($lt)*)*};
-		
-		$crate::cycle_matchbegin! {
-			@$a ($($t)*): $($tt)*
-		};
-		
-		let _e = {$($($rt)*)*};
-	}};*/
-	
-	
 	[@$a:tt ($($t:tt)*): $(#[$name:tt] {$($tt:tt)*}),* $(,)? ] => {{
-		/*$crate::cycle_matchbegin! {
-			@$a ($($t)*): $($tt)*
-		};
-		{ $($insert)* };*/
-		
-		
 		$crate::cycle_matchbegin_decoder! {
 			@$a ($($t)*):	
 			

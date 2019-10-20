@@ -6,10 +6,9 @@ Convenient macros for combining cycles (for, while, loop) with a match.
 [![crates.io](http://meritbadge.herokuapp.com/cycle_match)](https://crates.io/crates/cycle_match)
 [![Documentation](https://docs.rs/cycle_match/badge.svg)](https://docs.rs/cycle_match)
 
-Purpose: To read lines from a file ignoring comments and special characters using macros (for_match, while_match, loop).
+Purpose: To read lines from a file ignoring comments and special characters using macros (for_match, while_match).
 
 ```rust
-
 #[macro_use]
 extern crate cycle_match;
 
@@ -83,3 +82,62 @@ fn main() {
 }
 ```
 
+# What can be written in the body of macros?
+
+1. Same as what you write in "match"
+
+```rust
+#[macro_use]
+extern crate cycle_match;
+
+fn main() {
+	let data = b"123456789";
+	
+	let mut num = 0usize;
+	
+	let mut iter = data.iter();
+	while_match!((iter) -> || {
+		Some(b'0') => {},
+		Some(a @ b'0' ..= b'9') => {
+			num *= 10;
+			num += (a - b'0') as usize;
+		},
+		Some(a) => panic!("Unk byte: {:?}", a),
+		_ => break
+	});
+	
+	assert_eq!(num, 123456789);
+}
+```
+
+2. Combined "match" with code.
+
+/// Use only for special needs, as the meaning of the macro is lost.
+
+The standard macro body description consists only of descriptions of the insides of "match," but it is possible to add code before "match" or after "match."
+
+```rust
+#[macro_use]
+extern crate cycle_match;
+
+fn main() {
+	let mut num = 1;
+	loop_match!(@'begin (num, 0) -> |num_add| {
+		#[insert] { // Add code before matching
+			// Any code
+		},
+		#[begin] { //Body "match"
+			0 ..= 255	=> num_add += 2,
+			255 ..= 655 => num_add += 3,
+			655 ..= 955 => num_add += 4,
+			
+			_		=> break,
+		},
+		#[insert] { // Add Code After Match
+			num *= num_add;
+			// Any code
+		}
+	});
+	assert_eq!(num, 4224);
+}
+```
