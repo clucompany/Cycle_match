@@ -7,7 +7,7 @@ fn main() {
 	
 	let num = for_match!((data, _, 0usize) -> |_, num| {
 		Some(b'0') => {},
-		Some(a @ b'0' ..= b'9') => {
+		Some(a @ b'1' ..= b'9') => {
 			num *= 10;
 			num += (a - b'0') as usize;
 		},

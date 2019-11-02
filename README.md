@@ -70,7 +70,7 @@ fn main() {
 	let mut iter = data.iter();
 	while_match!((iter) -> || {
 		Some(b'0') => {},
-		Some(a @ b'0' ..= b'9') => {
+		Some(a @ b'1' ..= b'9') => {
 			num *= 10;
 			num += (a - b'0') as usize;
 		},
@@ -96,7 +96,7 @@ fn main() {
 	let mut num = 0;	
 	for_match!((data.as_bytes().into_iter()) -> || {
 		Some(b'0') => {},
-		Some(a @ b'0' ..= b'9') => {
+		Some(a @ b'1' ..= b'9') => {
 			num *= 10;
 			num += (a - b'0') as usize;
 		},
@@ -108,6 +108,29 @@ fn main() {
 }
 ```
 // See the "for_match" example for a more beautiful version.
+
+# Use 3 (loop_match)
+
+Purpose: Count the sum of all bytes of a string using the loop_match macro.
+
+```rust
+#[macro_use]
+extern crate cycle_match;
+
+fn main() {
+	let data = "1234567890";
+	
+	let mut data_n_index = 0usize;
+	let mut iter = data.as_bytes().into_iter();
+	loop_match!((iter.next()) -> || {
+		Some(a) => data_n_index += *a as usize,
+		_ => break,
+	});
+	
+	assert_eq!(data_n_index, 525);
+}
+```
+
 
 # Entrance arguments
 
@@ -127,7 +150,7 @@ fn main() {
 
 # What can be written in the body of macros?
 
-1. Same as what you write in "match"
+1. The same thing that you write in the body of the `match` language construct.
 
 ```rust
 #[macro_use]
@@ -141,7 +164,7 @@ fn main() {
 	let mut iter = data.iter();
 	while_match!((iter) -> || {
 		Some(b'0') => {},
-		Some(a @ b'0' ..= b'9') => {
+		Some(a @ b'1' ..= b'9') => {
 			num *= 10;
 			num += (a - b'0') as usize;
 		},
@@ -153,11 +176,12 @@ fn main() {
 }
 ```
 
-2. Combined "match" with code.
+2. Combined language construct `match` with remote blocks of executable code.
 
-/// Use only for special needs, as the meaning of the macro is lost.
+/// !Use only for needs that you especially need, as the macro value is lost.
 
-The standard macro body description consists only of descriptions of the insides of "match," but it is possible to add code before "match" or after "match."
+The standard macro body usually consists only of the internal parts of the `match` language construct, but it is possible to add code that executes before and after match. To do this, you need to move the executable code and the `match` code to the necessary blocks.
+
 
 ```rust
 #[macro_use]
@@ -166,19 +190,19 @@ extern crate cycle_match;
 fn main() {
 	let mut num = 1;
 	loop_match!(@'begin (num, 0) -> |num_add| {
-		#[insert] { // Add code before matching
-			// Any code
+		#[insert] { // Possible executable code before the `match` language construct
+			// Any possible executable code
 		},
-		#[begin] { //Body "match"
+		#[begin] { // The body of the language construct `match`
 			0 ..= 255	=> num_add += 2,
 			255 ..= 655 => num_add += 3,
 			655 ..= 955 => num_add += 4,
 			
 			_		=> break,
 		},
-		#[insert] { // Add Code After Match
+		#[insert] { // Possible executable code after the `match` language construct
 			num *= num_add;
-			// Any code
+			// Any possible executable code
 		}
 	});
 	assert_eq!(num, 4224);

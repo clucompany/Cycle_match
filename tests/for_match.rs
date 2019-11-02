@@ -10,7 +10,7 @@ fn for_match() {
 	
 	for_match!((data) -> || {
 		Some(b'0') => {},
-		Some(a @ b'0' ..= b'9') => {
+		Some(a @ b'1' ..= b'9') => {
 			num *= 10;
 			num += (a - b'0') as usize;
 		},
@@ -19,4 +19,17 @@ fn for_match() {
 	});
 	
 	assert_eq!(num, 123456789);
+}
+
+#[test]
+fn for_match_2() {
+	let data = "1234567890";
+	
+	let mut data_n_index = 0usize;
+	for_match!((data.as_bytes().into_iter()) -> || {
+		Some(a) => data_n_index += *a as usize,
+		_ => break,
+	});
+	
+	assert_eq!(data_n_index, 525);
 }
