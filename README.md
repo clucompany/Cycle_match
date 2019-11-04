@@ -55,7 +55,7 @@ fn main() -> Result<(), std:: io::Error> {
 }
 ```
 
-# Use 1 (while_match)
+## Use 1 (while_match)
 
 Purpose: Convert characters to a digital sequence using a macro while_math.
 
@@ -83,7 +83,7 @@ fn main() {
 }
 ```
 
-# Use 2 (for_match)
+## Use 2 (for_match)
 
 Purpose: Convert characters to a digital sequence using a macro for_match.
 
@@ -108,9 +108,10 @@ fn main() {
 	println!("{}", num);
 }
 ```
+
 // See the "for_match" example for a more beautiful version.
 
-# Use 3 (loop_match)
+## Use 3 (loop_match)
 
 Purpose: Count the sum of all bytes of a string using the loop_match macro.
 
@@ -132,8 +133,7 @@ fn main() {
 }
 ```
 
-
-# Entrance arguments
+## Entrance arguments
 
 1. loop_match
 
@@ -146,8 +146,6 @@ fn main() {
 (Necessarily) ```num```		 1 required argument for match.
 
 (Optional) ```0```		 Any possible value that will be available only in the body of this macro, described with a comma. This value will be associated with the name you write in | |. // (let mut num_add = 0; ...)
-
-
 
 ## What can be written in the body of macros?
 
@@ -182,7 +180,6 @@ fn main() {
 /// !Use only for needs that you especially need, as the macro value is lost.
 
 The standard macro body usually consists only of the internal parts of the `match` language construct, but it is possible to add code that executes before and after match. To do this, you need to move the executable code and the `match` code to the necessary blocks.
-
 
 ```rust
 #[macro_use]
