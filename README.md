@@ -1,4 +1,5 @@
 # cycle_match
+
 Convenient macros for combining cycles (for, while, loop) with a match.
 
 [![Build Status](https://travis-ci.org/clucompany/cycle_match.svg?branch=master)](https://travis-ci.org/clucompany/cycle_match)
@@ -148,7 +149,7 @@ fn main() {
 
 
 
-# What can be written in the body of macros?
+## What can be written in the body of macros?
 
 1. The same thing that you write in the body of the `match` language construct.
 
