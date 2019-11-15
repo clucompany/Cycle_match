@@ -5,25 +5,27 @@
 macro_rules! loop_match {
 	//let mut
 	
-	[ $(@$loop_prefix:tt)?		($($e_l:tt)*) -> || { $($tt:tt)* } ] => {{
+	[ $(@$loop_prefix:tt)?		($($args:tt)*) -> || { $($data:tt)* } ] => {{
 		$crate::loop_match_begin! {
 			(
-				[$(@$loop_prefix)?]~
-				[$($e_l)*]~
-				[$($tt)*]
-			):
+				[$($loop_prefix)?]
+				[$($args)*]
+				[]
+			) {
+				$($data)*
+			}
 		}
 	}};
 	
-	[ $(@$loop_prefix:tt)?		($($e_l:tt)*) -> |$($nn:tt),*| { $($tt:tt)* } ] => {{
+	[ $(@$loop_prefix:tt)?		($($args:tt)*) -> |$($nn:tt),*| { $($data:tt)* } ] => {{
 		$crate::loop_match_begin! {
 			(
-				[$(@$loop_prefix)?]~
-				[$($e_l)*]~
-				[$($tt)*]
-			):
-			
-			$($nn),*
+				[$($loop_prefix)?]
+				[$($args)*]
+				[$($nn),*]
+			) {
+				$($data)*
+			}
 		}
 	}};
 }
@@ -33,27 +35,35 @@ macro_rules! loop_match {
 #[macro_export]
 macro_rules! loop_match_begin {
 	[	
-		([$(@$loop_prefix:tt)?]~[ $a:expr $(, $nn_e:expr)* $(,)? ]~[$($tt:tt)*]): 
-			$($nn:tt),*
+		([$($loop_prefix:tt)?][ $a:expr $(, $nn:expr)* $(,)? ][$($nn_ident:tt),*] $(,)?) {
+			$($data:tt)*
+		}
 	] => {{
 		$crate::cycle_variable_init! {
-			$([$nn_e]: $nn)*
-		};
+			@new 
+			
+			{ $([$nn_ident]),* }
+			{ $([$nn]),* }
+		}
 		
 		$($loop_prefix:)? loop {
-			$crate::cycle_matchbegin!(@loop ($a): $($tt)*);
+			$crate::cycle_matchbegin!(@loop ($a): $($data)*);
 		}
 	}};
 	[	
-		([$(@$loop_prefix:tt)?]~[ $a:ident $(, $nn_e:expr)* $(,)? ]~[$($tt:tt)*]): 
-			$($nn:tt),*
+		([$($loop_prefix:tt)?][ $a:ident $(, $nn:expr)* $(,)? ][$($nn_ident:tt),*] $(,)?) {
+			$($data:tt)*
+		}
 	] => {{
 		$crate::cycle_variable_init! {
-			$([$nn_e]: $nn)*
-		};
+			@new 
+			
+			{ $([$nn_ident]),* }
+			{ $([$nn]),* }
+		}
 		
 		$($loop_prefix:)? loop {
-			$crate::cycle_matchbegin!(@loop ($a): $($tt)*);
+			$crate::cycle_matchbegin!(@loop ($a): $($data)*);
 		}
 	}};
 }

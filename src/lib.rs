@@ -144,7 +144,6 @@ macro_rules! cycle_matchbegin {
 				#[$name] {$($tt)*}
 			)*
 		}
-		
 	}};
 	
 	[@$a:tt ($($t:tt)*): $($tt:tt)* ] => {{
@@ -179,25 +178,92 @@ macro_rules! cycle_matchbegin_decoder {
 	};
 	
 	[@$a:tt ($($t:tt)*):] => {};
-	[] => {}
 }
+
 
 #[doc(hidden)]
 #[macro_export]
 macro_rules! cycle_variable_init {
-	[ [$nn_e:expr] : _ $($tt:tt)*] => {
-		{ $nn_e };
+	[ @new {}{} ] => {};
 		
+	[ @new { $([$($i_next:tt)+])? $(, [$($i:tt)+])* } {$([$($e_next:tt)+])? $(, [$($e:tt)+])*} ] => {
 		$crate::cycle_variable_init! {
-			$($tt)*
+			@check
+			
+			[$($($i_next)*)?] {$([$($i)*]),*} : [$($($e_next)+)?] {$([$($e)+]),*} {}
 		}
 	};
-	[ [$nn_e:expr] : $nn:ident $($tt:tt)*] => {
-		let mut $nn = $nn_e;
+	
+	
+	
+	[ @check [] {} : [] {} {}] => {}; //break
+	
+	[ @check [] {} : [] {} {$($data:tt)+}] => {
+		$crate::void_cycle_variable_init! {
+			$($data)+
+		}
+	}; //init variable
+	
+	
+	
+	//error  let _ = $e;
+	[ @check [] {$($unk_i:tt)*} : [ $($e:tt)+ ] {$($unk_e:tt)*} {$($ok:tt)*} ] => {
+		//#0
+		compile_error!(
+			concat!(
+				"For the expression \"", stringify!($($e)+), "\", a name was expected in | ... |, but this was not done. (You can specify either a name or _ to ignore the name)"
+			)
+		);
+	};
+	
+	//error  let e = _;
+	[ @check [ $($i2:tt)+ ] {$($unk_i:tt)*} : [] {$($unk_e:tt)*} {$($ok:tt)*} ] => {
+		compile_error!(
+			concat!(
+				"For the name \"", stringify!($($i2)+) ,"\", an expression in (...) was expected, but this was not done. (You can specify an expression, or remove the extra name in | ... |)"
+			)
+		);
+	};
+	
+	
+	
+	//next
+	[ @check 
+		[ $($i:tt)+ ] {$([$($next_i:tt)*])? $(, [$($unk_i:tt)*])*} : [ $($e:tt)+ ] { $([$($next_e:tt)*])? $(, [$($unk_e:tt)*])* } {
+			$( {$($ok:tt)+} ),*
+		} 
+		
+	] => {
 		
 		$crate::cycle_variable_init! {
-			$($tt)*
+			@check 
+			
+			[$($($next_i)*)?] { $([$($unk_i)*]),* } : [$($($next_e)*)?] { $([$($unk_e)*]),* } {
+				$({$($ok)+}, )* { [$($i)+][$($e)+] }
+			}
 		}
 	};
-	() => ()
+}
+
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! void_cycle_variable_init {
+	[ {[_] [$($e:tt)+]} $(, {$($all_tt:tt)+})* ] => {
+		{ $($e)+ };
+		
+		$crate::void_cycle_variable_init! {
+			$( {$($all_tt)+} ),*
+		}
+	};
+	
+	[ {[$i:ident] [$($e:tt)+]} $(, {$($all_tt:tt)+})* ] => {
+		let mut $i = { $($e)+ };
+		
+		$crate::void_cycle_variable_init! {
+			$( {$($all_tt)+} ),*
+		}
+	};
+	
+	[] => {};
 }

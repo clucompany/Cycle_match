@@ -1,4 +1,4 @@
-
+#![feature(type_ascription)]
 #[macro_use]
 extern crate cycle_match;
 

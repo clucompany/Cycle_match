@@ -1,4 +1,4 @@
-# cycle_match
+# Cycle_match
 
 Convenient macros for combining cycles (for, while, loop) with a match.
 
@@ -8,6 +8,7 @@ Convenient macros for combining cycles (for, while, loop) with a match.
 [![Documentation](https://docs.rs/cycle_match/badge.svg)](https://docs.rs/cycle_match)
 
 Purpose: To read lines from a file ignoring comments and special characters using macros (for_match, while_match).
+
 
 ```rust
 #[macro_use]
@@ -108,6 +109,7 @@ fn main() {
 	println!("{}", num);
 }
 ```
+
 // See the "for_match" example for a more beautiful version.
 
 ## Use 3 (loop_match)
@@ -133,7 +135,7 @@ fn main() {
 ```
 
 
-## Entrance arguments
+# Entrance arguments
 
 1. loop_match
 
@@ -147,6 +149,11 @@ fn main() {
 
 (Optional) ```0```		 Any possible value that will be available only in the body of this macro, described with a comma. This value will be associated with the name you write in | |. // (let mut num_add = 0; ...)
 
+2. while_match
+
+```
+	
+```
 
 
 ## What can be written in the body of macros?
