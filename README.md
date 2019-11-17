@@ -135,12 +135,9 @@ fn main() {
 
 # Entrance arguments
 
-1. loop_match
+1. loop_match ```loop_match!(@'begin (num, 0 ...) -> |num_add ...| {...} ```
 
 ```
-	loop_match!(@'begin (num, 0 ...) -> |num_add ...| {
-
-
 Input data:
 
 Record form: (A_Variable, ...) -> || ...
