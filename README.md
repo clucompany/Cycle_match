@@ -141,11 +141,27 @@ fn main() {
 	loop_match!(@'begin (num, 0 ...) -> |num_add ...| {
 ```
 
-(Optional) ```@'begin```	 Labels this loop.
+Input data:
 
-(Necessarily) ```num```		 1 required argument for match.
+Record form: (A_Variable, ...) -> || ...
+			
+1. (A_Variable, Required): The name of the variable or executable expression to compare.
+2. (..._variable, Optional): Description of internal variables.
 
-(Optional) ```0```		 Any possible value that will be available only in the body of this macro, described with a comma. This value will be associated with the name you write in | |. // (let mut num_add = 0; ...)
+
+Possible record (1): ```(a) -> || ...```
+// loop { match a {...} }
+
+Possible record (2): ```(a.next(), ...) -> |...| ...```
+// let mut $(...) = $(...)
+// loop { match a.next() {...} }
+
+Possible record (5): ```(a.next(), 1024, ...) -> |my_usize, ...| -> ...```
+// let mut my_usize = 1024;
+// let mut $(...) = $(...)
+// loop { match a.next() {...} }
+
+
 
 2. while_match
 
