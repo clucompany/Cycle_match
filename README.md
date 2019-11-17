@@ -141,8 +141,6 @@ loop_match!(@'begin (num, 0 ...) -> |num_add ...| {...} )
 ```
 
 ```
-Input data:
-
 Record form: (A_Variable, ...) -> || ...
 			
 1. (A_Variable, Required): The name of the variable or executable expression to compare.
@@ -170,8 +168,6 @@ while_match!(@'begin (data.iter(), let mut a, 1024usize) -> |my_usize| {...} )
 ```
 
 ```
-Input Data:
-
 Record form: (Iterator, A_Variable, ...) -> |...| ...
 			
 1. (Iterator, Required): The name of the iterator we are working with.
