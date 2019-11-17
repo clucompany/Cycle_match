@@ -133,9 +133,12 @@ fn main() {
 ```
 
 
-# Entrance arguments
+# Input data
 
-1. loop_match ```rust loop_match!(@'begin (num, 0 ...) -> |num_add ...| {...} ```
+1. loop_match 
+```rust 
+loop_match!(@'begin (num, 0 ...) -> |num_add ...| {...} );
+```
 
 ```
 Input data:
