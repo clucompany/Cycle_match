@@ -133,42 +133,135 @@ fn main() {
 ```
 
 
-# Entrance arguments
+# Description of input data record
 
-1. loop_match
+1. loop_match 
+```rust 
+loop_match!(@'begin (num, 0 ...) -> |num_add ...| {...} )
+```
 
 ```
-	loop_match!(@'begin (num, 0 ...) -> |num_add ...| {
-```
-
-Input data:
-
 Record form: (A_Variable, ...) -> || ...
 			
 1. (A_Variable, Required): The name of the variable or executable expression to compare.
 2. (..._variable, Optional): Description of internal variables.
 
 
-Possible record (1): ```(a) -> || ...```
+Possible record (1): (a) -> || ...
 // loop { match a {...} }
 
-Possible record (2): ```(a.next(), ...) -> |...| ...```
+Possible record (2): (a.next(), ...) -> |...| ...
 // let mut $(...) = $(...)
 // loop { match a.next() {...} }
 
-Possible record (3): ```(a.next(), 1024, ...) -> |my_usize, ...| -> ...```
+Possible record (3): (a.next(), 1024, ...) -> |my_usize, ...| -> ...
 // let mut my_usize = 1024;
 // let mut $(...) = $(...)
 // loop { match a.next() {...} }
 
-
+```
 
 2. while_match
 
-```
-	
+```rust
+while_match!(@'begin (data.iter(), let mut a, 1024usize) -> |my_usize| {...} )
 ```
 
+```
+Record form: (Iterator, A_Variable, ...) -> |...| ...
+			
+1. (Iterator, Required): The name of the iterator we are working with.
+2. (A_Variable, Optional): The name of the rewritable variable (you can omit and write _ or declare a new variable with the desired name using `let mut MyVar`)
+3. (..._variable, Optional): Description of internal variables.
+
+
+Possible record (1): (slice) -> ...
+// let mut __hidden_a;
+// loop { __hidden_a = slice.next(); ... }
+
+Possible record (2): (slice.my_next()) -> ...
+// let mut __hidden_a;
+// loop { __hidden_a = slice.my_next(); ... }
+
+Possible record (3): (slice, _, ...) -> ...
+// let mut __hidden_a;
+// let mut $(...) = $(...)
+// loop { __hidden_a = slice.next() }
+
+Possible record (4): (iter, a, ...) -> ...
+// let mut a;
+// let mut $(...) = $(...)
+// loop { a = iter.next() ... }
+
+Possible record (4): (iter, let mut a, ...) -> ...
+// let mut a;
+// let mut $(...) = $(...)
+// loop { a = iter.next() }
+
+Possible record (5): (iter, _ 1024, ...) -> |my_usize, ...| ...
+// let mut __hidden_a;
+// let mut my_usize = 1024;
+// let mut $(...) = $(...)
+// loop { __hidden_a = iter.next() }
+
+```
+
+3. for_match
+
+```rust
+for_match!(@'begin (data, _, 0usize) -> |_, num| {...} );
+```
+
+```
+Record form: (Iterator, A_Variable, ...) -> |Iterator, ...| ...
+
+1. (Iterator, Required): The name of the iterator we are working with.
+2. (A_Variable, Optional): The name of the rewritable variable (you can omit and write _ or declare a new variable with the desired name using `let mut MyVar`)
+3. (..._variable, Optional): Description of internal variables.
+
+
+Possible record (1): (slice) -> || ...
+// let mut __hidden_iter = slice.iter();
+// let mut __hidden_a;
+// loop { __hidden_a = __hidden_iter.next(); ... }
+
+Possible record (2): (slice) -> |iter| ...  
+// let mut iter = slice.iter();
+// let mut __hidden_a;
+// loop { __hidden_a = iter.next(); ... }
+
+Possible record  (3): (slice.into_iter(), let mut a) -> || ...
+// let mut __hidden_iter = slice.into_iter();
+// let mut a;
+// loop { a = iter.next(); ... }
+
+Possible record (4): (slice.into_iter(), let mut a, 1024usize, ...) -> |iter, my_usize, ...| ...
+// let mut iter = slice.into_iter();
+// let mut my_usize = 1024usize;
+// let mut a;
+// let ... = ...
+// loop { a = iter.next(); ... }
+
+Possible record (5): (slice.into_iter(), a, 1024usize, ...) -> |iter, my_usize, ...| ...
+// let mut iter = slice.into_iter();
+// let mut my_usize = 1024usize;
+// let ... = ...
+// loop { a = iter.next(); ... }
+
+Possible record (6): (slice.into_iter(), _, ...) -> |_, ...| ...
+// let mut __hidden_iter = slice.into_iter();
+// let mut __hidden_a;  // _ -> __hidden
+// let ... = ...
+// loop { __hidden_a = __hidden_iter.next(); ... }
+
+Possible record (7): (a.into_iter(), let mut a, 1024, ...) -> |iter, my_usize, ...| -> ...
+// let mut iter = a.into_iter();
+// let mut a;
+// let mut my_usize = 1024;
+// let ... = ...
+// loop { a = iter.next(); ... }
+
+```
 
 ## What can be written in the body of macros?
 
