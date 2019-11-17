@@ -14,16 +14,13 @@ Record form: (A_Variable, ...) -> || ...
 
 
 Expected (1): (a) -> || ...
-
 // loop { match a {...} }
 
 Expected (2): (a.next(), ...) -> |...| ...
-
 // let mut $(...) = $(...)
 // loop { match a.next() {...} }
 
 Expected (3): (a.next(), 1024, ...) -> |my_usize, ...| -> ...
-
 // let mut my_usize = 1024;
 // let mut $(...) = $(...)
 // loop { match a.next() {...} }
@@ -117,6 +114,8 @@ macro_rules! loop_match_begin {
 		}
 	] => {
 		$crate::cycle_variables! {
+			{}
+			
 			{ $([$nn_i]),* }
 			{ $([$nn_e]),* }
 		}
@@ -131,6 +130,8 @@ macro_rules! loop_match_begin {
 		}
 	] => {
 		$crate::cycle_variables! {
+			{ [{stringify!($a)}] }
+			
 			{ $([$nn_i]),* }
 			{ $([$nn_e]),* }
 		}

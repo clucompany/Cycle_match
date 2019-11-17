@@ -182,6 +182,8 @@ macro_rules! while_match_begin {
 			}
 	] => {
 		$crate::cycle_variables! {
+			{	[{stringify!($iter)}, {stringify!($a)}]	}
+			
 			{ $([$nn_i]),* }
 			{ $([$nn_e]),* }
 		}
@@ -201,6 +203,8 @@ macro_rules! while_match_begin {
 			}
 	] => {
 		$crate::cycle_variables! {
+			{	[{stringify!($a)}]	}
+			
 			{ $([$nn_i]),* }
 			{ $([$nn_e]),* }
 		}

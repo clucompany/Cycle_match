@@ -214,6 +214,8 @@ macro_rules! for_match_begin {
 		let mut $iter_name = $iter.iter();
 		
 		$crate::cycle_variables! {
+			{ [ {stringify!($iter_name)}, {stringify!($iter)}, {stringify!($a)}] }
+						
 			{ $([$nn_i]),* }
 			{ $([$nn_e]),* }
 		}
@@ -235,6 +237,8 @@ macro_rules! for_match_begin {
 		let mut $iter_name = $iter;
 		
 		$crate::cycle_variables! {
+			{ [ {stringify!($a)}, {stringify!($iter_name)} ] }
+			
 			{ $([$nn_i]),* }
 			{ $([$nn_e]),* }
 		}

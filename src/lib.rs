@@ -213,11 +213,13 @@ macro_rules! ext_cycle_match {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! cycle_variables {
-	[ {} {} ] => {};
+	[ {$($_unk:tt)*} {} {} ] => {};
+
 	
-	[ { $([$($i_next:tt)+])? $(, [$($i:tt)+])* } {$([$($e_next:tt)+])? $(, [$($e:tt)+])*} ] => {
+	[ { $($all:tt)* } { $([$($i_next:tt)+])? $(, [$($i:tt)+])* } {$([$($e_next:tt)+])? $(, [$($e:tt)+])*} ] => {
+		
 		$crate::cycle_variable_check! {
-			[$($($i_next)*)?] {$([$($i)*]),*} : [$($($e_next)+)?] {$([$($e)+]),*} {}
+			{ $($all)* }  [$($($i_next)*)?] {$([$($i)*]),*} : [$($($e_next)+)?] {$([$($e)+]),*}
 		}
 	};
 }
@@ -227,16 +229,10 @@ macro_rules! cycle_variables {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! cycle_variable_check {	
-	[ [] {} : [] {} {}] => {}; //break, empty variables
-	
-	[ [] {} : [] {} {$($data:tt)+}] => { //init variable
-		$crate::void_cycle_variable_init! {
-			$($data)+
-		}
-	};
+	[ {$($all_tt:tt)*} [] {} : [] {}] => {}; //break, empty variables
 	
 	//error  let _ = $e;
-	[ [] {$($unk_i:tt)*} : [ $($e:tt)+ ] {$($unk_e:tt)*} {$($ok:tt)*} ] => {
+	[ {$($all_tt:tt)*} [] {$($unk_i:tt)*} : [ $($e:tt)+ ] ] => {
 		//#0
 		compile_error!(
 			concat!(
@@ -247,7 +243,7 @@ macro_rules! cycle_variable_check {
 	};
 	
 	//error  let e = _;
-	[ [ $($i2:tt)+ ] {$($unk_i:tt)*} : [] {$($unk_e:tt)*} {$($ok:tt)*} ] => {
+	[ {$($all_tt:tt)*} [ $($i2:tt)+ ] {$($unk_i:tt)*} : [] ] => {
 		compile_error!(
 			concat!(
 				"For the name \"", stringify!($($i2)+) ,"\", an expression in (...) was expected, but this was not done. (You can specify an expression, or remove the extra name in | ... |)
@@ -257,18 +253,44 @@ macro_rules! cycle_variable_check {
 	};
 	
 	
-	//fn next
-	[
-		[ $($i:tt)+ ] {$([$($next_i:tt)*])? $(, [$($unk_i:tt)*])*} : [ $($e:tt)+ ] { $([$($next_e:tt)*])? $(, [$($unk_e:tt)*])* } {
-			$( {$($ok:tt)+} ),*
-		} 
+	
+	
+	[	{$($all_tt:tt)*}
+		
+		[ _ ] {$([$($next_i:tt)*])? $(, [$($unk_i:tt)*])*} : [ $($e:tt)+ ] { $([$($next_e:tt)*])? $(, [$($unk_e:tt)*])* }
 		
 	] => {
+		{ $($e)+ };
+		
 		
 		$crate::cycle_variable_check! {
-			[$($($next_i)*)?] { $([$($unk_i)*]),* } : [$($($next_e)*)?] { $([$($unk_e)*]),* } {
-				$({$($ok)+}, )* { [$($i)+][$($e)+] }
-			}
+			{$($all_tt)*}
+			
+			[$($($next_i)*)?] { $([$($unk_i)*]),* } : [$($($next_e)*)?] { $([$($unk_e)*]),* }
+		}
+	};
+	
+	
+	//fn next
+	[ 	{ $( [$($check:tt)*] )? }
+		
+		[ $i:ident ] {$([$($next_i:tt)*])? $(, [$($unk_i:tt)*])*} : [ $($e:tt)+ ] { $([$($next_e:tt)*])? $(, [$($unk_e:tt)*])* }
+		
+	] => {
+		{
+			$(
+				$crate::cycle_variable_names_check! {
+					[$($check)*]:  stringify!($i)
+				}
+			)?
+		}
+		
+		let mut $i = $($e)+;
+		
+		$crate::cycle_variable_check! {
+			{ $( [$($check)*] )? }
+			
+			[$($($next_i)*)?] { $([$($unk_i)*]),* } : [$($($next_e)*)?] { $([$($unk_e)*]),* }
 		}
 	};
 }
@@ -276,22 +298,22 @@ macro_rules! cycle_variable_check {
 
 #[doc(hidden)]
 #[macro_export]
-macro_rules! void_cycle_variable_init {
-	[ {[_] [$($e:tt)+]} $(, {$($all_tt:tt)+})* ] => {
-		{ $($e)+ };
+macro_rules! cycle_variable_names_check {
+	[ []: $($__ignore:tt)* ] => {}; //break	
+	
+	[ [ {$self_name:expr}  $(, {$next_expr:expr} )* ]:  $i:expr ] => {
+		if $self_name == $i {
+			compile_error!(
+				concat!(
+					"Name conflict, possibly undefined behavior. Call the variable \"", 
+						stringify!($self_name), "==", stringify!($i) ,"\" something different."
+				)
+			);
+		}
 		
-		$crate::void_cycle_variable_init! {
-			$( {$($all_tt)+} ),*
+		$crate::cycle_variable_names_check! {
+			[ $({$next_expr}),* ]: $i
 		}
 	};
-	
-	[ {[$i:ident] [$($e:tt)+]} $(, {$($all_tt:tt)+})* ] => {
-		let mut $i = { $($e)+ };
-		
-		$crate::void_cycle_variable_init! {
-			$( {$($all_tt)+} ),*
-		}
-	};
-	
-	[] => {};
 }
+

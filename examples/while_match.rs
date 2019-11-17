@@ -18,7 +18,10 @@ fn main() {
 		_ => break
 	});
 	
-	//while_match!(@'begin (data.iter(), let mut a, 1024usize, "test") -> |a,b| {});
+	
+	while_match!(@'begin (data.iter(), let mut a, 1024usize, "test") -> |ac, b| {
+		_ => break,
+	});
 	
 	
 	assert_eq!(num, 123456789);
