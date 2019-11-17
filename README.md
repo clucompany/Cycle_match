@@ -146,19 +146,18 @@ Record form: (A_Variable, ...) -> || ...
 2. (..._variable, Optional): Description of internal variables.
 
 
-Possible record (1): ```(a) -> || ...```
+# Possible record (1): (a) -> || ...
 // loop { match a {...} }
 
-Possible record (2): (a.next(), ...) -> |...| ...
-
+# Possible record (2): (a.next(), ...) -> |...| ...
 // let mut $(...) = $(...)
 // loop { match a.next() {...} }
 
-Possible record (3): (a.next(), 1024, ...) -> |my_usize, ...| -> ...
-
+# Possible record (3): (a.next(), 1024, ...) -> |my_usize, ...| -> ...
 // let mut my_usize = 1024;
 // let mut $(...) = $(...)
 // loop { match a.next() {...} }
+
 ```
 
 
