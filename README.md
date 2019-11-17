@@ -151,23 +151,22 @@ Record form: (A_Variable, ...) -> || ...
 
 Possible record (1): ```(a) -> || ...```
 
-// ```loop { match a {...} }```
+```loop { match a {...} }
+```
 
 
 Possible record (2): ```(a.next(), ...) -> |...| ...```
 
-// ```let mut $(...) = $(...)```
-
-// ```loop { match a.next() {...} }```
-
+```let mut $(...) = $(...)
+loop { match a.next() {...} }
+```
 
 Possible record (3): ```(a.next(), 1024, ...) -> |my_usize, ...| -> ...```
 
-// ```let mut my_usize = 1024;```
-
-// ```let mut $(...) = $(...)```
-
-// ```loop { match a.next() {...} }```
+```let mut my_usize = 1024;
+let mut $(...) = $(...)
+loop { match a.next() {...} }
+```
 
 
 
