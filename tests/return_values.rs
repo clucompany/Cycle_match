@@ -1,4 +1,3 @@
-#![feature(type_ascription)]
 #[macro_use]
 extern crate cycle_match;
 
@@ -16,7 +15,6 @@ fn return_values() {
 			break data;
 		},
 	});
-	
 	assert_eq!(index, 1);
 	assert_eq!(loop_match, 256);
 	

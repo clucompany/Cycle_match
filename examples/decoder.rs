@@ -5,17 +5,30 @@ extern crate cycle_match;
 fn main() {
 	
 	let data = "
-/*
-Привет, это мой текст....
-*/
-# ignore this txt,,,,,,, ......
+	
+	/*
+	tabs:
+		1 History
 
-Я его сейчас набираю, тестирую эту библиотеку. Потратил на нее два дня...
-Слушаю уокера.
-
-#Ulin 1819 cluCompany, ...
-//...
-19.10.2019 test.
+		1.1 Nupedia
+		1.2 Launch and early growth
+		1.3 Milestones
+	*/
+	
+	Википедия:
+	
+	Wikipedia (ˌwɪkɪˈpiːdiə (About this soundlisten) wik-ih-PEE-dee-ə or ˌwɪkiˈpiːdiə
+	(About this soundlisten) wik-ee-PEE-dee-ə) is a multilingual online encyclopedia 
+	created and maintained as an open collaboration project[3] by a community of 
+	volunteer editors using a wiki-based editing system.[4] It is the largest 
+	and most popular general reference work on the World Wide Web,[5][6][7] and 
+	is one of the most popular websites ranked by Alexa as of October 2019.[8] It 
+	features exclusively free content and no commercial ads, and is owned and supported 
+	by the Wikimedia Foundation, a non-profit organization funded primarily through 
+	donations.[9][10][11][12] 
+	
+	# https://en.wikipedia.org/wiki/Wikipedia 
+	// 17.11.19 15:06 (+03)
 ";
 	
 	let mut q_comments = 0;
@@ -42,7 +55,9 @@ fn main() {
 		Some(' ') => q_spaces += 1,
 		Some(',') => q_commas += 1,
 		Some('.') => q_points += 1,
+		
 		Some('\n') | Some('\t') => q_special_utf8 += 1,
+		
 		Some('0' ..= '9') => q_numbers += 1,
 		Some('А' ..= 'Я') | Some('Ё') => {
 			q_russian_utf8 += 1;
@@ -63,45 +78,40 @@ fn main() {
 			q_engl_small_utf8 += 1;
 		},
 		
-		Some('#') => {
-			q_comments += 1;
-			while_match!((iter, a) -> || {
-				Some('\n') => continue 'decoder,
-				Some(_a) => {},
-				_ => break 'decoder,
-			});
-		},
+		Some('#') => while_match!((iter, a, q_comments += 1) -> |_| {
+			Some('\n') => continue 'decoder,
+			Some(_a) => {},
+			_ => break 'decoder,
+		}),
 		Some('/') => match iter.next() {
-			Some('*') => {
-				q_comments += 1;
-				loop_match!(@'decode_a (a, a = iter.next()) -> |_| {
-					Some('*') => match iter.next() {
-						Some('/') => continue 'decoder,
-						Some(_a) => {
-							a = iter.next();
-							continue 'decode_a;
-						},
-						_ => panic!("The symbol '/' was expected. "),
-					},
+			//a = iter.next, At start!!
+			Some('*') => loop_match!(@'decode_a (a, a = iter.next(), q_comments += 1) -> |_, _| {
+				Some('*') => match iter.next() {
+					Some('/') => continue 'decoder,
 					Some(_a) => {
 						a = iter.next();
 						continue 'decode_a;
 					},
-					_ => panic!("The symbol '*' was expected. "),
-				});
-			},
-			Some('/') => {
-				q_comments += 1;
-				while_match!((iter, a) -> || {
-					Some('\n') => continue 'decoder,
-					Some(_a) => {},
-					_ => break 'decoder,
-				});
-			},
+					_ => panic!("The symbol '/' was expected. "),
+				},
+				Some(_a) => {
+					a = iter.next();
+					continue 'decode_a;
+				},
+				_ => panic!("The symbol '*' was expected. "),
+			}),
+			
+			Some('/') => while_match!((iter, a, q_comments += 1) -> |_| {
+				Some('\n') => continue 'decoder,
+				Some(_a) => {},
+				_ => break 'decoder,
+			}),
+			
 			_ => panic!("The symbol '*' was expected. "),
 		},
 		
-		Some(a) => panic!("Unk symbol '{}'", a),
+		//Some(a) => panic!("Unk symbol '{}'", a),
+		Some(_a) => {},
 		_ => break,
 	});
 	

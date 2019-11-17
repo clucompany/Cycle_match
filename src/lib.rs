@@ -69,13 +69,11 @@ fn main() -> Result<(), std:: io::Error> {
 						buffer.clear();
 					}
 				},
-				Some(b'#') => {
-					while_match!((iter) -> || {
-						Some(b'\n') => continue 'read,
-						Some(_a) => {},
-						_ => break 'read,
-					});
-				},
+				Some(b'#') => while_match!((iter) -> || {
+					Some(b'\n') => continue 'read,
+					Some(_a) => {},
+					_ => break 'read,
+				}),
 				Some(a) => buffer.push(*a),
 				_ => break,
 			});
@@ -135,109 +133,139 @@ mod loop_match;
 
 #[doc(hidden)]
 #[macro_export]
-macro_rules! cycle_matchbegin {
-	[@$a:tt ($($t:tt)*): $(#[$name:tt] {$($tt:tt)*}),* $(,)? ] => {{
-		$crate::cycle_matchbegin_decoder! {
-			@$a ($($t)*):	
+macro_rules! cycle_match {
+	// ext version
+	[@$m_type:tt ($($match_args:tt)+): $(#[$name:tt] {$($ext_data:tt)*}),+ $(,)? ] => {
+		$crate::ext_cycle_match! {
+			@$m_type ($($match_args)+):	
 			
 			$(
-				#[$name] {$($tt)*}
+				#[$name] {$($ext_data)*}
 			)*
 		}
-	}};
+	};
 	
-	[@$a:tt ($($t:tt)*): $($tt:tt)* ] => {{
-		match $($t)* {
-			$($tt)*
+/*
+	// default version, empty match
+	[@$m_type:tt ($($match_args:tt)+): ] => {
+		compile_error! (
+			concat!("An internal description of the 'match' language construct was expected.
+			
+Provided by: \"\"
+
+Expected \"
+	Some(a) => ... ,
+	None => ... ,
+\"
+"
+			)
+		)
+	};
+*/
+
+/*
+	// default version, empty version
+	[@$m_type:tt ($($match_args:tt)+): ] => {
+		
+	};
+*/
+
+	// default version
+	[@$m_type:tt ($($match_args:tt)+): $($data:tt)* ] => {
+		match $($match_args)+ {
+			$($data)*
 		}
-	}};
+	};
 }
 
 #[doc(hidden)]
 #[macro_export]
-macro_rules! cycle_matchbegin_decoder {
-	[@$a:tt ($($t:tt)*):	#[begin] {$($tt:tt)*} $($all_data:tt)*] => {
-		$crate::cycle_matchbegin! {
-			@$a ($($t)*): $($tt)*
+macro_rules! ext_cycle_match {
+	[@$m_type:tt (): ] => {}; //break
+	
+	[@$m_type:tt ($($match_args:tt)+):	#[begin] {$($data:tt)*} $($all_data:tt)*] => {{
+		$crate::cycle_match! {
+			@$m_type ($($match_args)+): $($data)*
 		};
 		
-		$crate::cycle_matchbegin_decoder! {
-			@$a ():
-			$($all_data)*
-		}
-	};
-	
-	[@$a:tt ($($t:tt)*):	#[insert] {$($tt:tt)*} $($all_data:tt)*] => {
-		{$($tt)*};
-		
-		$crate::cycle_matchbegin_decoder! {
-			@$a ($($t)*):
+		$crate::ext_cycle_match! {
+			@$m_type ():
 			
 			$($all_data)*
 		}
-	};
+	}};
 	
-	[@$a:tt ($($t:tt)*):] => {};
+	[@$m_type:tt ($($match_args:tt)+):	#[insert] {$($data:tt)*} $($all_data:tt)*] => {{
+		{$($data)*};
+		
+		$crate::ext_cycle_match! {
+			@$m_type ($($match_args)+):
+			
+			$($all_data)*
+		}
+	}};
 }
+
+
+
 
 
 #[doc(hidden)]
 #[macro_export]
-macro_rules! cycle_variable_init {
-	[ @new {}{} ] => {};
-		
-	[ @new { $([$($i_next:tt)+])? $(, [$($i:tt)+])* } {$([$($e_next:tt)+])? $(, [$($e:tt)+])*} ] => {
-		$crate::cycle_variable_init! {
-			@check
-			
+macro_rules! cycle_variables {
+	[ {} {} ] => {};
+	
+	[ { $([$($i_next:tt)+])? $(, [$($i:tt)+])* } {$([$($e_next:tt)+])? $(, [$($e:tt)+])*} ] => {
+		$crate::cycle_variable_check! {
 			[$($($i_next)*)?] {$([$($i)*]),*} : [$($($e_next)+)?] {$([$($e)+]),*} {}
 		}
 	};
+}
+
+
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! cycle_variable_check {	
+	[ [] {} : [] {} {}] => {}; //break, empty variables
 	
-	
-	
-	[ @check [] {} : [] {} {}] => {}; //break
-	
-	[ @check [] {} : [] {} {$($data:tt)+}] => {
+	[ [] {} : [] {} {$($data:tt)+}] => { //init variable
 		$crate::void_cycle_variable_init! {
 			$($data)+
 		}
-	}; //init variable
-	
-	
+	};
 	
 	//error  let _ = $e;
-	[ @check [] {$($unk_i:tt)*} : [ $($e:tt)+ ] {$($unk_e:tt)*} {$($ok:tt)*} ] => {
+	[ [] {$($unk_i:tt)*} : [ $($e:tt)+ ] {$($unk_e:tt)*} {$($ok:tt)*} ] => {
 		//#0
 		compile_error!(
 			concat!(
-				"For the expression \"", stringify!($($e)+), "\", a name was expected in | ... |, but this was not done. (You can specify either a name or _ to ignore the name)"
+				"For the expression \"", stringify!($($e)+), "\", a name was expected in | ... |, but this was not done. (You can specify either a name or _ to ignore the name)
+"
 			)
 		);
 	};
 	
 	//error  let e = _;
-	[ @check [ $($i2:tt)+ ] {$($unk_i:tt)*} : [] {$($unk_e:tt)*} {$($ok:tt)*} ] => {
+	[ [ $($i2:tt)+ ] {$($unk_i:tt)*} : [] {$($unk_e:tt)*} {$($ok:tt)*} ] => {
 		compile_error!(
 			concat!(
-				"For the name \"", stringify!($($i2)+) ,"\", an expression in (...) was expected, but this was not done. (You can specify an expression, or remove the extra name in | ... |)"
+				"For the name \"", stringify!($($i2)+) ,"\", an expression in (...) was expected, but this was not done. (You can specify an expression, or remove the extra name in | ... |)
+"
 			)
 		);
 	};
 	
 	
-	
-	//next
-	[ @check 
+	//fn next
+	[
 		[ $($i:tt)+ ] {$([$($next_i:tt)*])? $(, [$($unk_i:tt)*])*} : [ $($e:tt)+ ] { $([$($next_e:tt)*])? $(, [$($unk_e:tt)*])* } {
 			$( {$($ok:tt)+} ),*
 		} 
 		
 	] => {
 		
-		$crate::cycle_variable_init! {
-			@check 
-			
+		$crate::cycle_variable_check! {
 			[$($($next_i)*)?] { $([$($unk_i)*]),* } : [$($($next_e)*)?] { $([$($unk_e)*]),* } {
 				$({$($ok)+}, )* { [$($i)+][$($e)+] }
 			}

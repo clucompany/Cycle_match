@@ -31,15 +31,72 @@
 ///```
 #[macro_export]
 macro_rules! for_match {
+	
+	[ $(@$prefix:tt)?		() $($unk_tt:tt)* ] => {{
+		compile_error! (
+			"Initial macro arguments are required, please describe them in (...).
+
+Record form: (Iterator, A_Variable, ...) -> |Iterator, ...| ...
+
+1. (Iterator, Required): The name of the iterator we are working with.
+2. (A_Variable, Optional): The name of the rewritable variable (you can omit and write _ or declare a new variable with the desired name using `let mut MyVar`)
+3. (..._variable, Optional): Description of internal variables.
+
+
+Expected (1): (slice) -> || ...
+// let mut __hidden_iter = slice.iter();
+// let mut __hidden_a;
+// loop { __hidden_a = __hidden_iter.next(); ... }
+
+Expected (2): (slice) -> |iter| ...  
+// let mut iter = slice.iter();
+// let mut __hidden_a;
+// loop { __hidden_a = iter.next(); ... }
+
+Expected (3): (slice.into_iter(), let mut a) -> || ...
+// let mut __hidden_iter = slice.into_iter();
+// let mut a;
+// loop { a = iter.next(); ... }
+
+Expected (4): (slice.into_iter(), let mut a, 1024usize, ...) -> |iter, my_usize, ...| ...
+// let mut iter = slice.into_iter();
+// let mut my_usize = 1024usize;
+// let mut a;
+// let ... = ...
+// loop { a = iter.next(); ... }
+
+Expected (5): (slice.into_iter(), a, 1024usize, ...) -> |iter, my_usize, ...| ...
+// let mut iter = slice.into_iter();
+// let mut my_usize = 1024usize;
+// let ... = ...
+// loop { a = iter.next(); ... }
+
+Expected (6): (slice.into_iter(), _, ...) -> |_, ...| ...
+// let mut __hidden_iter = slice.into_iter();
+// let mut __hidden_a;  // _ -> __hidden
+// let ... = ...
+// loop { __hidden_a = __hidden_iter.next(); ... }
+
+Expected (7): (a.into_iter(), let mut a, 1024, ...) -> |iter, my_usize, ...| -> ...
+// let mut iter = a.into_iter();
+// let mut a;
+// let mut my_usize = 1024;
+// let ... = ...
+// loop { a = iter.next(); ... }
+
+"
+		)
+	}};
+	
+	
 	//new let iter, _
-	[ $(@$loop_prefix:tt)?	 ($($args:tt)*) -> || { $($data:tt)* } ] => {{
+	[ $(@$prefix:tt)?	 ($($args:tt)*) -> || { $($data:tt)* } ] => {{
 		$crate::for_match_begin! {
 			(
-				[$($loop_prefix)?]
+				[$($prefix)?]
 			):
 			
-			[$($args)*]
-			[]
+			[$($args)*][]
 			
 			{
 				$($data)*
@@ -47,14 +104,13 @@ macro_rules! for_match {
 		}
 	}};
 
-	[ $(@$loop_prefix:tt)?	 ($($args:tt)*) -> |$($names:tt),*| { $($data:tt)* } ] => {{
+	[ $(@$prefix:tt)?	 ($($args:tt)*) -> |$($nn_i:tt),*| { $($data:tt)* } ] => {{
 		$crate::for_match_begin! {
 			(
-				[$($loop_prefix)?]
+				[$($prefix)?]
 			):
 			
-			[$($args)*]
-			[$($names),*] 
+			[$($args)*][$($nn_i),*] 
 			
 			{
 				$($data)*
@@ -72,10 +128,7 @@ macro_rules! for_match_begin {
 		$crate::for_match_begin! {
 			($($all_tt)*): 
 			
-			[$iter, let mut _aa]
-			[$($names)*] 
-			
-			{
+			[$iter, let mut __a_hidden][$($names)*] {
 				$($data)*
 			}
 		}
@@ -84,10 +137,7 @@ macro_rules! for_match_begin {
 		$crate::for_match_begin! {
 			($($all_tt)*): 
 			
-			[$iter, let mut _aa]
-			[$($names)*] 
-			
-			{
+			[$iter, let mut __a_hidden][$($names)*] {
 				$($data)*
 			}
 		}
@@ -97,10 +147,7 @@ macro_rules! for_match_begin {
 		$crate::for_match_begin! {
 			($($all_tt)*): 
 			
-			[$iter, $a $($args)*]
-			[$($names)*] 
-			
-			{
+			[$iter, $a $($args)*][$($names)*] {
 				$($data)*
 			}
 		}
@@ -110,10 +157,7 @@ macro_rules! for_match_begin {
 		$crate::for_match_begin! {
 			($($all_tt)*): 
 			
-			[$iter, $a $($args)*]
-			[$($names)*] 
-			
-			{
+			[$iter, $a $($args)*][$($names)*] {
 				$($data)*
 			}
 		}
@@ -122,10 +166,7 @@ macro_rules! for_match_begin {
 		$crate::for_match_begin! {
 			($($all_tt)*): 
 			
-			[$iter, let mut _aa $($args)*]
-			[$($names)*] 
-			
-			{
+			[$iter, let mut __a_hidden $($args)*][$($names)*] {
 				$($data)*
 			}
 		}
@@ -134,34 +175,19 @@ macro_rules! for_match_begin {
 		$crate::for_match_begin! {
 			($($all_tt)*): 
 			
-			[$iter, let mut _aa $($args)*]
-			[$($names)*] 
-			
-			{
+			[$iter, let mut __a_hidden $($args)*][$($names)*] {
 				$($data)*
 			}
 		}
 	};
-	/*[($($all_tt:tt)*): [$iter:ident, _ $($args:tt)*]~[$($names:tt)*]	] => {
-		let mut aas;
-		$crate::for_match_begin! {
-			($($all_tt)*): 
-			
-			[$iter, aas $($args)*]~
-			[$($names)*]
-		}
-	};*/
 	
 	
-	//names
+	//names, empty args
 	[($($all_tt:tt)*): [$($args:tt)*] [] {$($data:tt)*}] => {
 		$crate::for_match_begin! {
 			($($all_tt)*): 
 			
-			[$($args)*]
-			[__iiter] 
-			
-			{
+			[$($args)*][__iter_hidden]{
 				$($data)*
 			}
 		}
@@ -170,10 +196,7 @@ macro_rules! for_match_begin {
 		$crate::for_match_begin! {
 			($($all_tt)*): 
 			
-			[$($args)*]
-			[__iiter $($names)*] 
-			
-			{
+			[$($args)*][__iiter $($names)*] {
 				$($data)*
 			}
 		}
@@ -181,31 +204,29 @@ macro_rules! for_match_begin {
 	
 	
 	[//iter ident
-		( [$($loop_prefix:tt)?] ): 
-			[$iter:ident, $a:expr	$(, $nn:expr)* $(,)?] //args
-			[$iter_name: ident 	$(, $nn_ident:tt)* $(,)?] //names
+		( [$($prefix:tt)?] ): 
+			[$iter:ident, $a:expr	$(, $nn_e:expr)* $(,)?] //args
+			[$iter_name: ident 	$(, $nn_i:tt)* $(,)?] //names
 			{
 				$($data:tt)*
 			}
 	] => {
 		let mut $iter_name = $iter.iter();
 		
-		$crate::cycle_variable_init! {
-			@new 
-			
-			{ $([$nn_ident]),* }
-			{ $([$nn]),* }
+		$crate::cycle_variables! {
+			{ $([$nn_i]),* }
+			{ $([$nn_e]),* }
 		}
 		
-		$($loop_prefix:)? loop {
+		$($prefix:)? loop {
 			$a = core::iter::Iterator::next(&mut $iter_name);
-			$crate::cycle_matchbegin!(@for ($a): $($data)*);
+			$crate::cycle_match!(@for ($a): $($data)*);
 		}
 	};
 	[//iter ident
-		( [$($loop_prefix:tt)?] ): 
-			[$iter:expr, $a:expr	$(, $nn:expr)* $(,)?] //args
-			[$iter_name: ident 	$(, $nn_ident:tt)* $(,)?] //names
+		( [$($prefix:tt)?] ): 
+			[$iter:expr, $a:expr	$(, $nn_e:expr)* $(,)?] //args
+			[$iter_name: ident 	$(, $nn_i:tt)* $(,)?] //names
 			
 			{
 				$($data:tt)*
@@ -213,16 +234,14 @@ macro_rules! for_match_begin {
 	] => {
 		let mut $iter_name = $iter;
 		
-		$crate::cycle_variable_init! {
-			@new 
-			
-			{ $([$nn_ident]),* }
-			{ $([$nn]),* }
+		$crate::cycle_variables! {
+			{ $([$nn_i]),* }
+			{ $([$nn_e]),* }
 		}
 		
-		$($loop_prefix:)? loop {
+		$($prefix:)? loop {
 			$a = core::iter::Iterator::next(&mut $iter_name);
-			$crate::cycle_matchbegin!(@for ($a): $($data)*);
+			$crate::cycle_match!(@for ($a): $($data)*);
 		}
 	};
 }

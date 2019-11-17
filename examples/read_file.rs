@@ -22,13 +22,11 @@ fn main() -> Result<(), std:: io::Error> {
 						buffer.clear();
 					}
 				},
-				Some(b'#') => {
-					while_match!((iter) -> || {
-						Some(b'\n') => continue 'read,
-						Some(_a) => {},
-						_ => break 'read,
-					});
-				},
+				Some(b'#') => while_match!((iter) -> || {
+					Some(b'\n') => continue 'read,
+					Some(_a) => {},
+					_ => break 'read,
+				}),
 				Some(a) => buffer.push(*a),
 				_ => break,
 			});

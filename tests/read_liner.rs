@@ -23,19 +23,16 @@ line 7
 	for_match!(@'read (data.into_iter()) -> |iter| {
 		Some(13u8) => continue,
 		Some(b'\n') => is_str = false,
-		Some(b'#') => {
-			comments_count += 1;
-			while_match!((iter) -> || {
-				Some(b'\n') => continue 'read,
-				Some(_a) => {},
-				_ => break 'read,
-			});
-		},
-		Some(_a) => {
-			if !is_str {
-				is_str = true;
-				str_count += 1;
-			}
+		
+		Some(b'#') => while_match!((iter, _, comments_count += 1) -> |_| {
+			Some(b'\n') => continue 'read,
+			Some(_a) => {},
+			_ => break 'read,
+		}),
+		
+		Some(_a) => if !is_str {
+			is_str = true;
+			str_count += 1;
 		},
 		_ => break,
 	});
