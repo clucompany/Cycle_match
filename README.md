@@ -156,7 +156,7 @@ Possible record (2): ```(a.next(), ...) -> |...| ...```
 // let mut $(...) = $(...)
 // loop { match a.next() {...} }
 
-Possible record (5): ```(a.next(), 1024, ...) -> |my_usize, ...| -> ...```
+Possible record (3): ```(a.next(), 1024, ...) -> |my_usize, ...| -> ...```
 // let mut my_usize = 1024;
 // let mut $(...) = $(...)
 // loop { match a.next() {...} }
