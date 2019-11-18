@@ -127,14 +127,14 @@ macro_rules! while_match_begin {
 	//$iter args -> full args
 	[($($all_tt:tt)*): [$iter:ident] [$($names:tt)*] {$($data:tt)*} ] => {
 		$crate::while_match_begin! {
-			($($all_tt)*): [$iter, let mut __a_hidden] [$($names)*] {
+			($($all_tt)*): [$iter, _] [$($names)*] {
 				$($data)*
 			}
 		}
 	};
 	[($($all_tt:tt)*): [$iter:expr] [$($names:tt)*] {$($data:tt)*} ] => {
 		$crate::while_match_begin! {
-			($($all_tt)*): [$iter, let mut __a_hidden] [$($names)*] {
+			($($all_tt)*): [$iter, _] [$($names)*] {
 				$($data)*
 			}
 		}
@@ -158,15 +158,17 @@ macro_rules! while_match_begin {
 		}
 	};
 	[($($all_tt:tt)*): [$iter:ident, _ $($args:tt)*] [$($names:tt)*]  {$($data:tt)*} ] => {
+		let mut __a_hidden;
 		$crate::while_match_begin! {
-			($($all_tt)*): [$iter, let mut __a_hidden $($args)*] [$($names)*] {
+			($($all_tt)*): [$iter, __a_hidden $($args)*] [$($names)*] {
 				$($data)*
 			}
 		}
 	};
 	[($($all_tt:tt)*): [$iter:expr, _ $($args:tt)*] [$($names:tt)*] {$($data:tt)*} ] => {
+		let mut __a_hidden;
 		$crate::while_match_begin! {
-			($($all_tt)*): [$iter, let mut __a_hidden $($args)*] [$($names)*] {
+			($($all_tt)*): [$iter, __a_hidden $($args)*] [$($names)*] {
 				$($data)*
 			}
 		}
@@ -182,7 +184,7 @@ macro_rules! while_match_begin {
 			}
 	] => {
 		$crate::cycle_variables! {
-			{	[{stringify!($iter)}, {stringify!($a)}]	}
+			{	[{$iter}, {$a}]	}
 			
 			{ $([$nn_i]),* }
 			{ $([$nn_e]),* }
@@ -203,7 +205,7 @@ macro_rules! while_match_begin {
 			}
 	] => {
 		$crate::cycle_variables! {
-			{	[{stringify!($a)}]	}
+			{	[{$a}]	}
 			
 			{ $([$nn_i]),* }
 			{ $([$nn_e]),* }

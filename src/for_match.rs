@@ -196,7 +196,7 @@ macro_rules! for_match_begin {
 		$crate::for_match_begin! {
 			($($all_tt)*): 
 			
-			[$($args)*][__iiter $($names)*] {
+			[$($args)*][__iter_hidden $($names)*] {
 				$($data)*
 			}
 		}
@@ -205,7 +205,7 @@ macro_rules! for_match_begin {
 	
 	[//iter ident
 		( [$($prefix:tt)?] ): 
-			[$iter:ident, $a:expr	$(, $nn_e:expr)* $(,)?] //args
+			[$iter:ident, $a:ident	$(, $nn_e:expr)* $(,)?] //args
 			[$iter_name: ident 	$(, $nn_i:tt)* $(,)?] //names
 			{
 				$($data:tt)*
@@ -214,7 +214,7 @@ macro_rules! for_match_begin {
 		let mut $iter_name = $iter.iter();
 		
 		$crate::cycle_variables! {
-			{ [ {stringify!($iter_name)}, {stringify!($iter)}, {stringify!($a)}] }
+			{ [ {$iter_name}, {$iter}, {$a}] }
 						
 			{ $([$nn_i]),* }
 			{ $([$nn_e]),* }
@@ -227,7 +227,7 @@ macro_rules! for_match_begin {
 	};
 	[//iter ident
 		( [$($prefix:tt)?] ): 
-			[$iter:expr, $a:expr	$(, $nn_e:expr)* $(,)?] //args
+			[$iter:expr, $a:ident	$(, $nn_e:expr)* $(,)?] //args
 			[$iter_name: ident 	$(, $nn_i:tt)* $(,)?] //names
 			
 			{
@@ -237,7 +237,7 @@ macro_rules! for_match_begin {
 		let mut $iter_name = $iter;
 		
 		$crate::cycle_variables! {
-			{ [ {stringify!($a)}, {stringify!($iter_name)} ] }
+			{ [ {$iter_name}, {$a} ] }
 			
 			{ $([$nn_i]),* }
 			{ $([$nn_e]),* }

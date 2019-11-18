@@ -218,7 +218,7 @@ macro_rules! cycle_variables {
 	
 	[ { $($all:tt)* } { $([$($i_next:tt)+])? $(, [$($i:tt)+])* } {$([$($e_next:tt)+])? $(, [$($e:tt)+])*} ] => {
 		
-		$crate::cycle_variable_check! {
+		$crate::cycle_variables_begin! {
 			{ $($all)* }  [$($($i_next)*)?] {$([$($i)*]),*} : [$($($e_next)+)?] {$([$($e)+]),*}
 		}
 	};
@@ -228,7 +228,7 @@ macro_rules! cycle_variables {
 
 #[doc(hidden)]
 #[macro_export]
-macro_rules! cycle_variable_check {	
+macro_rules! cycle_variables_begin {	
 	[ {$($all_tt:tt)*} [] {} : [] {}] => {}; //break, empty variables
 	
 	//error  let _ = $e;
@@ -263,7 +263,7 @@ macro_rules! cycle_variable_check {
 		{ $($e)+ };
 		
 		
-		$crate::cycle_variable_check! {
+		$crate::cycle_variables_begin! {
 			{$($all_tt)*}
 			
 			[$($($next_i)*)?] { $([$($unk_i)*]),* } : [$($($next_e)*)?] { $([$($unk_e)*]),* }
@@ -280,14 +280,14 @@ macro_rules! cycle_variable_check {
 		{
 			$(
 				$crate::cycle_variable_names_check! {
-					[$($check)*]:  stringify!($i)
+					[$($check)*]:  $i
 				}
 			)?
 		}
 		
 		let mut $i = $($e)+;
 		
-		$crate::cycle_variable_check! {
+		$crate::cycle_variables_begin! {
 			{ $( [$($check)*] )? }
 			
 			[$($($next_i)*)?] { $([$($unk_i)*]),* } : [$($($next_e)*)?] { $([$($unk_e)*]),* }
@@ -301,14 +301,31 @@ macro_rules! cycle_variable_check {
 macro_rules! cycle_variable_names_check {
 	[ []: $($__ignore:tt)* ] => {}; //break	
 	
-	[ [ {$self_name:expr}  $(, {$next_expr:expr} )* ]:  $i:expr ] => {
-		if $self_name == $i {
-			compile_error!(
-				concat!(
-					"Name conflict, possibly undefined behavior. Call the variable \"", 
-						stringify!($self_name), "==", stringify!($i) ,"\" something different."
-				)
-			);
+	[ [ {$self_name:ident}  $(, {$next_expr:ident} )* ]:  $i:ident ] => {
+		
+		macro_rules! check_ident_equality {
+			[ ({$self_name} : {$self_name}) -> $ok:block ] => {$ok};
+			[ ({$i} : {$i}) -> $ok:block ] => {$ok};
+			
+			[ ({$self_name} : {$self_name}) -> $ok:block else $err:block ] => {$ok};
+			[ ({$i} : {$i}) -> $ok:block else $err:block ] => {$ok};
+			
+			
+			[ ({$self_name} : {$uunk:tt}) -> $ok:block ] => {};
+			[ ({$self_name} : {$uunk:tt}) -> $ok:block else $err:block ] => {$err};
+		}
+		
+		check_ident_equality! {
+			({$self_name} : {$i}) -> {
+				compile_error!(
+					concat!(
+						"Name conflict, possibly undefined behavior. Call the variable \"", 
+							stringify!($i) ,"\" something different."
+					)
+				);
+			}else {
+				
+			}
 		}
 		
 		$crate::cycle_variable_names_check! {

@@ -130,7 +130,7 @@ macro_rules! loop_match_begin {
 		}
 	] => {
 		$crate::cycle_variables! {
-			{ [{stringify!($a)}] }
+			{ [{$a}] }
 			
 			{ $([$nn_i]),* }
 			{ $([$nn_e]),* }
